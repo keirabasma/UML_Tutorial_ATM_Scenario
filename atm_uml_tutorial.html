@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>From Use Cases to Class, Sequence and Activity Diagrams</title>
+<style>
+:root{--bg:#FFFAF5;--card:#fff;--ink:#1F2937;--mut:#6B7280;--ln:#5B6472;--acc:#D9480F;--tl:#14213D;--mt:#FDEADD;--bd:#E6D9CF;--c1:#D5EFEA;--c2:#FDEBC8;--c3:#DCE8F7;--c4:#E8E6EF;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1426;--card:#172036;--ink:#E8ECF7;--mut:#A4AEC6;--ln:#9AA5BF;--acc:#FF9B6B;--tl:#EEF1FA;--mt:#2B3350;--bd:#2D3856;--c1:#1E4A44;--c2:#5A4516;--c3:#24406B;--c4:#343650}}
+:root[data-theme="dark"]{--bg:#0F1426;--card:#172036;--ink:#E8ECF7;--mut:#A4AEC6;--ln:#9AA5BF;--acc:#FF9B6B;--tl:#EEF1FA;--mt:#2B3350;--bd:#2D3856;--c1:#1E4A44;--c2:#5A4516;--c3:#24406B;--c4:#343650}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Calibri,"Segoe UI",system-ui,Arial,sans-serif;font-size:16px;line-height:1.5}
+.w{max-width:1060px;margin:0 auto;padding:20px 16px 40px}
+h1{font-family:Cambria,Georgia,serif;color:var(--tl);font-size:1.9rem;line-height:1.2;margin:0 0 6px}
+h2{font-family:Cambria,Georgia,serif;color:var(--tl);font-size:1.25rem;margin:28px 0 8px}
+.sub{color:var(--mut);margin:0 0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+button{font:inherit;color:inherit;cursor:pointer}
+.tab{background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:8px 16px;font-weight:700}
+.tab.on{background:var(--tl);color:var(--bg);border-color:var(--tl)}
+.g{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:18px;align-items:start}
+@media(max-width:820px){.g{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+ol{list-style:none;margin:0;padding:0}
+li button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:8px 4px;border-radius:8px}
+li b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--mt);color:var(--tl);display:grid;place-items:center;font-size:.85rem}
+li.on button{font-weight:700}li.on b{background:var(--acc);color:#fff}
+li p{margin:0 0 8px 36px;font-size:.95rem}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;border-top:1px solid var(--bd);padding-top:10px}
+.btn{background:var(--tl);color:var(--bg);border:0;border-radius:10px;padding:8px 16px;font-weight:700}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.dia{overflow-x:auto}
+svg{display:block;width:100%;min-width:560px;height:auto}
+svg text{fill:var(--ink);font-size:11px}
+.m{text-anchor:middle}.b{font-weight:700}.q{fill:var(--mut)}.sm{font-size:10px}
+.ln{stroke:var(--ln);stroke-width:1.3;fill:none}.bx{fill:var(--card);stroke:var(--ln);stroke-width:1.3}
+.uc{fill:var(--c1);stroke:var(--ln);stroke-width:1.3}.t{stroke:none}.bar{fill:var(--ink)}.dash{stroke-dasharray:5 4}.arr{marker-end:url(#ar)}
+g.hl :is(rect,ellipse,line,path,polygon,circle){stroke:var(--acc);stroke-width:2.2}
+g.hl rect.bar{fill:var(--acc)}g.hl text{fill:var(--acc)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+td,th{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--mt);color:var(--tl)}
+.sc{overflow-x:auto}
+</style></head>
+<body><div class="w">
+<h1>From Use Cases to Class, Sequence and Activity Diagrams</h1>
+<p class="sub">An interactive walk-through using the ATM use case diagram. Pick a diagram, then step through it: the newest part is highlighted. Arrow keys also work.</p>
+<div class="tabs" id="tabs"></div>
+<div class="g"><div class="card"><ol id="steps"></ol><div class="nav"><button class="btn" id="prev">Back</button><span id="cnt" class="q"></span><button class="btn" id="next">Next</button></div></div>
+<div class="card dia" id="dia"></div></div>
+<h2>Check that the three diagrams agree</h2>
+<div class="card sc"><table><tr><th>Use case element</th><th>Class diagram</th><th>Sequence diagram</th><th>Activity diagram</th></tr>
+<tr><td>Authenticate Customer («include»)</td><td>AuthenticationController, BankSystemProxy</td><td>First message group, include frame</td><td>Enter PIN, Verify PIN, PIN valid?</td></tr>
+<tr><td>Withdraw Cash</td><td>WithdrawCashController, Transaction</td><td>withdraw, debit, create</td><td>Select Withdraw to Dispense cash</td></tr>
+<tr><td>Print Receipt («extend»)</td><td>Receipt, 0..1 per Transaction</td><td>opt [receipt requested]</td><td>[receipt requested] branch</td></tr>
+<tr><td>Bank System (actor)</td><td>BankSystemProxy</td><td>Right-most lifeline</td><td>Bank System swim lane</td></tr>
+<tr><td>Insufficient funds</td><td>Boolean result of withdraw</td><td>alt fragment</td><td>[funds insufficient] branch</td></tr></table></div>
+<p class="sub" style="margin-top:14px">Rule of thumb: every message in the sequence diagram is an operation of the receiving class, and every use case step is an action in the activity diagram.</p>
+</div>
+<script>
+const DEF='<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.5"/></marker></defs>';
+const g=(s,x,h)=>`<g data-s="${s}"${h?` data-h="${h}"`:''}>${x}</g>`;
+const L=(a,b,c,d,k='')=>`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" class="ln ${k}"/>`;
+const P=(d,k='')=>`<path d="${d}" class="ln ${k}"/>`;
+const T=(x,y,s,k='')=>`<text x="${x}" y="${y}" class="${k}">${s}</text>`;
+const RR=(x,y,w,h,k='bx',r=6,e='')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" class="${k}" ${e}/>`;
+const EL=(x,y,rx,ry,k='uc')=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" class="${k}"/>`;
+const sv=(w,h,l,x)=>`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${l}">${DEF}${x}</svg>`;
+const A=(s,x,y,n)=>g(s,`<circle cx="${x}" cy="${y-24}" r="8" class="ln"/>`+P(`M${x} ${y-16}V${y+10}M${x-14} ${y-8}H${x+14}M${x} ${y+10}L${x-12} ${y+30}M${x} ${y+10}L${x+12} ${y+30}`)+T(x,y+46,n,'m b'));
+const uc=(x,y,rx,ry,a,b,h)=>g(1,EL(x,y,rx,ry)+(b?T(x,y-3,a,'m')+T(x,y+11,b,'m'):T(x,y+4,a,'m')),h);
+function UC(){return sv(760,330,'ATM use case diagram',
+ g(1,RR(190,20,380,290,'ln dash',8)+T(205,42,'ATM System','b'))+A(1,80,165,'Customer')+A(1,680,165,'Bank System')
+ +uc(300,105,70,26,'Withdraw Cash','','3')+uc(470,70,62,24,'Print Receipt')+uc(470,175,70,26,'Authenticate','Customer')+uc(300,255,70,26,'Check Balance','','3')
+ +g(1,L(100,160,230,115)+L(100,170,230,248)+L(660,165,540,175))
+ +g(2,L(350,125,425,155,'dash arr')+L(350,236,427,196,'dash arr')+L(410,77,362,92,'dash arr')+T(404,128,'«include»','q sm')+T(380,236,'«include»','q sm')+T(352,68,'«extend»','q sm')))}
+const K={boundary:'--c1',control:'--c2',entity:'--c3',proxy:'--c4'};
+const CL=[['ATMInterface',275,15,210,'boundary',['- sessionId:String'],['+ readCard()','+ promptPin()','+ display(message)','+ dispenseCash(amount)','+ ejectCard()']],
+['WithdrawCashController',15,210,210,'control',['- amount:Money'],['+ withdraw(card,amount):Boolean','+ printReceipt()']],
+['AuthenticationController',275,210,210,'control',['- attempts:int'],['+ authenticate(card,pin):Boolean']],
+['BalanceController',535,210,210,'control',['- lastBalance:Money'],['+ getBalance(card):Money']],
+['Transaction',15,370,190,'entity',['- id:String','- type:String','- amount:Money','- date:Date'],['+ record()']],
+['Receipt',280,370,190,'entity',['- number:String','- content:String'],['+ print()']],
+['BankSystemProxy',530,370,210,'proxy',['- serverAddress:String'],['+ verifyPin(card,pin):Boolean','+ debit(card,amount):Boolean','+ balanceOf(card):Money']]];
+function CLS(){let o='';for(const[n,x,y,w,k,at,op]of CL){const ha=at.length*15+8,ho=op.length*15+8,h=34+ha+ho;
+ o+=g(2,RR(x,y,w,h,'t',4,`style="fill:var(${K[k]})"`)+T(x+w/2,y+13,'«'+k+'»','m sm q'))
+ +g(1,RR(x,y,w,h,'ln',4)+L(x,y+34,x+w,y+34)+L(x,y+34+ha,x+w,y+34+ha)+T(x+w/2,y+27,n,'m b'))
+ +g(3,at.map((s,i)=>T(x+8,y+34+14+i*15,s)).join(''))+g(4,op.map((s,i)=>T(x+8,y+34+ha+14+i*15,s)).join(''))}
+ return sv(760,520,'ATM class diagram',o+g(5,L(380,155,380,210,'arr')+P('M330 155V182H120V210','arr')+P('M430 155V182H640V210','arr')+L(225,250,275,250,'dash arr')+T(250,243,'«use»','m sm q')+L(535,250,485,250,'dash arr')+T(510,243,'«use»','m sm q')+L(440,290,560,370,'arr')+P('M175 305V338H600V370','arr')+L(660,290,660,370,'arr'))
+ +g(6,L(110,305,110,370,'arr')+T(116,322,'1','sm')+T(122,342,'creates','sm q')+T(116,362,'0..*','sm')+L(205,420,280,420,'arr')+T(209,413,'1','sm')+T(252,413,'0..1','sm')))}
+const PA=[['Customer','',48,70,1],[':ATM','Interface',140,70,1],[':Authentication','Controller',232,70,1],[':WithdrawCash','Controller',324,70,1],[':BankSystem','Proxy',416,70,1],['Bank','System',508,70,1],[':Transaction','',600,530,4],[':Receipt','',692,604,5]];
+const M=[[150,0,1,'insertCard()',0,2],[174,1,0,'promptPin()',1,2],[198,0,1,'enterPin(pin)',0,2],[222,1,2,'authenticate(card,pin)',0,2],[246,2,4,'verifyPin(card,pin)',0,2],[270,4,5,'verify request',0,2],[294,5,4,'valid',1,2],[318,4,2,'true',1,2],[342,2,1,'authenticated',1,2],
+[382,0,1,'select Withdraw, enter amount',0,3],[406,1,3,'withdraw(card,amount)',0,3],[430,3,4,'debit(card,amount)',0,3],[454,4,5,'debit request',0,3],[478,5,4,'approved or refused',1,3],[502,4,3,'Boolean',1,3],
+[548,3,6,'create, record()',0,4,1],[576,3,1,'dispenseCash(amount)',0,4],[622,3,7,'create, print()',0,5,1],[684,3,1,'display(insufficient funds)',0,4],[722,1,0,'ejectCard()',0,4]];
+function SEQ(){let o='';for(const[a,b,x,y,s]of PA)o+=g(s,L(x,y+34,x,745,'dash')+RR(x-43,y,86,34)+(b?T(x,y+14,a,'m sm b')+T(x,y+27,b,'m sm b'):T(x,y+21,a,'m sm b')));
+ o+=g(2,RR(30,108,712,248,'ln',4)+T(38,121,'include: Authenticate Customer','sm b q'))+g(4,RR(30,516,712,190,'ln',4)+T(38,529,'alt [funds sufficient]','sm b q')+L(30,652,742,652,'dash')+T(38,665,'[funds insufficient]','sm b q'))+g(5,RR(300,590,442,58,'ln',4)+T(308,603,'opt [receipt requested]','sm b q'));
+ for(const[y,f,t,l,d,s,c]of M){const r=t>f,x1=PA[f][2]+(r?4:-4),x2=PA[t][2]+(c?(r?-43:43):(r?-4:4));o+=g(s,L(x1,y,x2,y,'arr'+(d?' dash':''))+T((x1+x2)/2,y-5,l,'m sm'))}
+ for(const[x,a,b]of[[232,222,342],[416,246,318],[416,430,502],[324,406,700],[508,270,294],[508,454,478]])o+=g(6,RR(x-4,a,8,b-a,'bx',0));
+ return sv(760,760,'ATM withdraw cash sequence diagram',o)}
+const AN=[[95,100,120,'Insert card'],[370,150,180,'Read card, prompt for PIN'],[95,200,120,'Enter PIN'],[655,250,130,'Verify PIN'],[370,310,100,'Show error'],[95,360,172,'Select Withdraw, enter amount'],[655,410,190,'Check funds, debit account'],[370,470,100,'Show error'],[310,590,100,'Dispense cash'],[430,590,112,'Record transaction'],[370,770,110,'Print receipt'],[370,830,110,'Eject card']];
+const DN=[[655,310,62,24,'PIN valid?',4],[655,470,70,26,'Funds sufficient?',4],[370,690,72,26,'Receipt requested?',6]];
+function ACT(){let o='';for(const[x,w,n]of[[0,190,'Customer'],[190,360,'ATM'],[550,210,'Bank System']])o+=g(1,RR(x,10,w,890,'ln',0)+RR(x,10,w,26,'bx',0)+T(x+w/2,28,n,'m b'));
+ o+=g(1,`<circle cx="95" cy="62" r="8" class="bar"/>`);
+ for(const[x,y,w,n]of AN)o+=g(2,RR(x-w/2,y-15,w,30,'uc',14)+T(x,y+4,n,'m'));
+ for(const[x,y,a,b,n,s]of DN)o+=g(s,`<polygon points="${x-a},${y} ${x},${y-b} ${x+a},${y} ${x},${y+b}" class="bx"/>`+T(x,y+4,n,'m'));
+ const a='arr';
+ o+=g(3,L(95,70,95,85,a)+L(155,100,280,150,a)+L(280,150,155,200,a)+L(155,200,590,250,a)+P('M95 375V410H560',a))
+ +g(4,L(655,265,655,286,a)+L(585,310,420,310,a)+T(503,302,'[PIN invalid]','m sm q')+P('M320 310H95V215',a)+P('M655 334V360H181',a)+T(662,352,'[PIN valid]','sm q')+L(655,425,655,444,a)+L(585,470,420,470,a)+T(503,462,'[funds insufficient]','m sm q')+P('M320 470H215V830H315',a))
+ +g(5,P('M655 496V540H465',a)+T(560,534,'[funds sufficient]','m sm q')+RR(275,537,190,6,'bar',0)+RR(275,637,190,6,'bar',0)+L(310,543,310,575,a)+L(430,543,430,575,a)+L(310,605,310,637,a)+L(430,605,430,637,a))
+ +g(6,L(370,643,370,664,a)+L(370,716,370,755,a)+T(378,740,'[receipt requested]','sm q')+L(370,785,370,815,a)+P('M442 690H520V830H425',a)+T(481,682,'[no receipt]','m sm q')+L(370,845,370,868,a)+`<circle cx="370" cy="880" r="10" class="ln"/><circle cx="370" cy="880" r="6" class="bar"/>`);
+ return sv(760,905,'ATM withdraw cash activity diagram with swim lanes',o)}
+const S0=[['Read the diagram','Two actors, four use cases and one system boundary. <b>Customer</b> starts Withdraw Cash and Check Balance. <b>Bank System</b> is a supporting actor linked to Authenticate Customer.'],
+['Read the relationships','<b>«include»</b> (arrow from base to included): Withdraw Cash and Check Balance always need Authenticate Customer. <b>«extend»</b> (arrow from extension to base): Print Receipt is optional and conditional. Everything inside the boundary is what we must design.'],
+['Write the descriptions first','The diagram has no steps, so write them. <b>Withdraw Cash:</b> 1 include Authenticate Customer (insert card, enter PIN, the Bank System verifies); 2 select Withdraw Cash; 3 enter amount; 4 the ATM asks the Bank System to debit; 5 the Bank approves; 6 the ATM dispenses cash and records the transaction; 7 if a receipt is requested, run Print Receipt; 8 eject the card. <b>Alternatives:</b> PIN invalid, retry then end; funds insufficient, refuse and eject. All three diagrams are derived from this text.']];
+const S1=[['Find the classes','Underline the nouns: Customer, Card, PIN, ATM, Bank System, Account, Balance, Amount, Cash, Receipt, Transaction, Menu. Remove actors (Customer, Bank System), values that become attributes or parameters (PIN, Amount, Balance), physical output (Cash) and UI details (Menu). Keep ATMInterface, Transaction and Receipt; add one controller per use case and a proxy for the Bank System.'],
+['Classify: boundary, control, entity','<b>Boundary</b> talks to actors (ATMInterface). <b>Control</b> coordinates one use case, one controller per use case (Controller pattern). <b>Entity</b> keeps data (Transaction, Receipt). The <b>proxy</b> is a local stand-in that hides the remote Bank System (Proxy pattern).'],
+['Add attributes','Ask what each class must remember. Write them as <i>visibility name:Type</i> and keep them private (-) to respect encapsulation.'],
+['Add operations','Turn the verbs of the descriptions into operations and give each to the class that holds the information (Expert pattern). Each one is a message you will need in the sequence diagram.'],
+['Translate the relationships','Customer associations become interface-to-controller associations. Each <b>«include»</b> becomes a dependency from WithdrawCashController and BalanceController to AuthenticationController. The Bank System is reached by all controllers through the proxy.'],
+['Multiplicities and Creator','WithdrawCashController creates Transactions (Creator pattern: it has the data), so 1 to 0..*. A Transaction has 0..1 Receipt: the zero is the <b>«extend»</b> of Print Receipt. Check that every use case has a controller and no class lacks a purpose.']];
+const S2=[['Choose scenario and participants','One scenario: the main flow of Withdraw Cash. Lifelines come from the class diagram; the starting actor is on the left, the external system on the right. Objects created during the scenario (Transaction, Receipt) appear where they are created.'],
+['Include: authentication','Turn each description step into a message, in order from top to bottom. Solid arrows are calls, dashed arrows are returns. The included use case is a group of messages in its own frame (or a <i>ref</i> frame).'],
+['Withdraw and debit','The controller asks the proxy to debit the account, and the proxy calls the Bank System. Each message must be an operation of the receiving class in the class diagram.'],
+['alt: sufficient or insufficient funds','An <b>alt</b> fragment shows alternatives chosen by a guard. If funds suffice, create and record the Transaction and dispense cash; otherwise display a message. Both end with ejecting the card.'],
+['opt: print receipt («extend»)','An <b>opt</b> fragment runs only if its guard is true. It models the extension: the Receipt is created only if the customer asked for one.'],
+['Activations and checks','Activation bars show when an object is busy. Final checks: every message is an operation of the receiver, every description step appears, every participant is a class or actor, and the order reads correctly from top to bottom.']];
+const S3=[['Scope, swim lanes, start','Scope: Withdraw Cash from card insertion to card ejection. One lane per actor or component: Customer, ATM, Bank System. Each action goes in the lane of its performer. Draw one initial node.'],
+['List the actions','Turn the verbs of the main flow and the alternatives into short action names and place them in the right lane.'],
+['Connect with control flow','Draw arrows in the order of the use case steps. A flow crosses a lane boundary when responsibility passes to someone else.'],
+['Decisions and guards','A decision is a diamond with guards in brackets. Guards must cover every case without overlapping: [PIN valid] and [PIN invalid]; [funds sufficient] and [funds insufficient]. A failed PIN loops back to Enter PIN.'],
+['Fork and join','After approval, dispensing the cash and recording the transaction can happen at the same time. The fork bar splits the flow and the join bar waits for both. Every fork needs a join.'],
+['Optional receipt, end, verify','[receipt requested] leads to Print receipt (the «extend»); the other branch skips it. All paths reach Eject card and the final node. Verify: each step is an action, all guards are present, fork and join are balanced, every path ends.']];
+const TABS=[['1 Use case diagram',UC,S0],['2 Class diagram',CLS,S1],['3 Sequence diagram',SEQ,S2],['4 Activity diagram',ACT,S3]];
+let tab=0;const st=[1,1,1,1],$=i=>document.getElementById(i);
+function draw(full){const[,f,S]=TABS[tab],c=st[tab];
+ $('tabs').innerHTML=TABS.map((t,i)=>`<button class="tab${i==tab?' on':''}" data-t="${i}">${t[0]}</button>`).join('');
+ $('steps').innerHTML=S.map((s,i)=>`<li class="${i+1==c?'on':''}"><button data-s="${i+1}"><b>${i+1}</b>${s[0]}</button>${i+1==c?`<p>${s[1]}</p>`:''}</li>`).join('');
+ $('cnt').textContent=`Step ${c} of ${S.length}`;$('prev').disabled=c==1;$('next').disabled=c==S.length;
+ if(full)$('dia').innerHTML=f();
+ $('dia').querySelectorAll('g[data-s]').forEach(e=>{const s=+e.dataset.s;e.style.display=s>c?'none':'';e.classList.toggle('hl',s==c||(e.dataset.h||'').split(',').includes(''+c))})}
+function go(d){const n=st[tab]+d;if(n>=1&&n<=TABS[tab][2].length){st[tab]=n;draw()}}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.t!==undefined){tab=+b.dataset.t;draw(1)}else if(b.dataset.s){st[tab]=+b.dataset.s;draw()}else if(b.id=='prev')go(-1);else if(b.id=='next')go(1)});
+document.addEventListener('keydown',e=>{if(e.key=='ArrowRight')go(1);if(e.key=='ArrowLeft')go(-1)});
+draw(1);
+</script></body></html>
